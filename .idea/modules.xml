@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/HW1/HW1.iml" filepath="$PROJECT_DIR$/HW1/HW1.iml" />
       <module fileurl="file://$PROJECT_DIR$/practical-data-structures-and-algorithms.iml" filepath="$PROJECT_DIR$/practical-data-structures-and-algorithms.iml" />
     </modules>
   </component>
