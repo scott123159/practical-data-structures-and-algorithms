@@ -4,7 +4,7 @@ import edu.princeton.cs.algs4.Point2D;
 
 class ObservationStationAnalysis {
     private Stack<Point2D> hull;
-    private List<Point2D> stations;
+    private final List<Point2D> stations;
     public ObservationStationAnalysis(ArrayList<Point2D> stations) {
         // you can do something in Constructor or not
         this.stations = stations;
@@ -12,20 +12,12 @@ class ObservationStationAnalysis {
     }
 
     private void GrahamScan(List<Point2D> points) {
-        if (points == null) throw new IllegalArgumentException("argument is null");
-        if (points.isEmpty()) throw new IllegalArgumentException("array is of length 0");
         hull = new Stack<>();
-        // defensive copy
+
         int n = points.size();
 
-        // preprocess so that a[0] has lowest y-coordinate; break ties by x-coordinate
-        // a[0] is an extreme point of the convex hull
-        // (alternatively, could do easily in linear time)
         points.sort(null);
         points.subList(1, points.size()).sort(points.get(0).polarOrder());
-
-        // sort by polar angle with respect to base point a[0],
-        // breaking ties by distance to a[0]
 
         hull.push(points.get(0));       // a[0] is first extreme point
 
@@ -44,10 +36,8 @@ class ObservationStationAnalysis {
         // Graham scan; note that a[n-1] is extreme point different from a[0]
         for (int i = k2; i < n; i++) {
             Point2D top = hull.pop();
-            while (Point2D.ccw(hull.peek(), top, points.get(i
-            )) <= 0) {
+            while (Point2D.ccw(hull.peek(), top, points.get(i)) <= 0)
                 top = hull.pop();
-            }
             hull.push(top);
             hull.push(points.get(i));
         }
@@ -75,6 +65,29 @@ class ObservationStationAnalysis {
         return farthest;
     }
 
+    private boolean isInside(Stack<Point2D>hull, Point2D p) {
+        int n = hull.size();
+        double x = 0, y = 0;
+
+        for (Point2D point2D : hull) {
+            x += point2D.x();
+            y += point2D.y();
+        }
+        for (int i = 0; i < n; i++) {
+            int j = (i + 1) % n;
+            double x1 = hull.get(i).x() * n, x2 = hull.get(j).x() * n;
+            double y1 = hull.get(i).y() * n, y2 = hull.get(j).y() * n;
+            double a1 = y1 - y2;
+            double b1 = x2 - x1;
+            double c1 = x1 * y2 - y1 * x2;
+            double forMid = a1 * x + b1 * y + c1;
+            double forP = a1 * p.x() * n + b1 * p.y() * n + c1;
+            if (forMid * forP < 0)
+                return false;
+        }
+        return true;
+    }
+
     public double coverageArea() {
         double area = 0.0;
         // calculate the area surrounded by the existing stations
@@ -90,6 +103,9 @@ class ObservationStationAnalysis {
     }
 
     public void addNewStation(Point2D newStation) {
+        //System.out.println(isInside(hull, newStation));
+        if (isInside(hull, newStation))
+            return;
         stations.add(newStation);
         GrahamScan(stations);
     }
