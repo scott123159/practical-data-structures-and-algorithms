@@ -1,6 +1,7 @@
 import java.util.*;
 import edu.princeton.cs.algs4.MaxPQ;
 
+/*For testing...*/
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.Arrays;
@@ -69,7 +70,7 @@ class test_Exam{
         }
     }
 }
-
+/*For testing...*/
 class Exam {
     public static List<int[]> getPassedList(Integer[][] scores)
     {
@@ -81,42 +82,59 @@ class Exam {
         //return:
         //    return a List of {ID, totalScore}
         //    sorted in descending order of the total score
-        int subjectCount = scores.length;
-        int studentCount = scores[0].length;
-        int[] passed = new int[studentCount];
-        int quota = (int)Math.ceil(studentCount * .2);
-        for (int i = 0; i < subjectCount; i++) {
-            MaxPQ<int[]> maxPQ = new MaxPQ<>(
+
+        int numberOfSubjects = scores.length;
+        int numberOfStudents = scores[0].length;
+        int[] passedStudent = new int[numberOfStudents];
+
+        for (Integer[] integers : scores) {
+            int quotas = (int) Math.ceil(numberOfStudents * .2);
+            MaxPQ<int[]> scoreRanks = new MaxPQ<>(
                     (o1, o2) -> o1[1] == o2[1] ?
-                    Integer.compare(o2[0], o1[0]) :
-                    Integer.compare(o1[1], o2[1])
+                            Integer.compare(o2[0], o1[0]) :
+                            Integer.compare(o1[1], o2[1])
             );
-            for (int j = 0; j < studentCount; j++) {
-                maxPQ.insert(new int[] {j, scores[i][j]});
+
+            for (int studentIndex = 0; studentIndex < numberOfStudents; studentIndex++)
+                scoreRanks.insert(new int[]{studentIndex, integers[studentIndex]});
+
+            int lastTopScore = 0;
+
+            while (quotas > 0 && !scoreRanks.isEmpty()) {
+                int[] currentTopStudent = scoreRanks.delMax();
+                if (quotas == 1) lastTopScore = currentTopStudent[1];
+                quotas--;
+                passedStudent[currentTopStudent[0]] += 1;
             }
-            for (int j = 0; j < quota; j++) {
-                passed[maxPQ.delMax()[0]] += 1;
+
+            while (!scoreRanks.isEmpty() && scoreRanks.max()[1] == lastTopScore) {
+                passedStudent[scoreRanks.delMax()[0]] += 1;
             }
         }
-        MaxPQ<int[]> maxPQ = new MaxPQ<>(
+
+        MaxPQ<int[]> topRanks = new MaxPQ<>(
                 (o1, o2) -> o1[1] == o2[1] ?
                         Integer.compare(o2[0], o1[0]) :
                         Integer.compare(o1[1], o2[1])
         );
-        for (int i = 0; i < studentCount; i++) {
-            int sum = 0;
-            if (passed[i] == subjectCount) {
+        List<int[]> results = new ArrayList<>();
+
+        for (int studentIndex = 0; studentIndex < numberOfStudents; studentIndex++) {
+            int totalScore = 0;
+            if (passedStudent[studentIndex] == numberOfSubjects) {
                 for (Integer[] score : scores) {
-                    sum += score[i];
+                    totalScore += score[studentIndex];
                 }
-                maxPQ.insert(new int[] {i, sum});
+                topRanks.insert(new int[] {studentIndex, totalScore});
             }
         }
-        int size = maxPQ.size();
-        List<int[]> results = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            results.add(maxPQ.delMax());
+
+        int topRanksSize = topRanks.size();
+
+        for (int index = 0; index < topRanksSize; index++) {
+            results.add(topRanks.delMax());
         }
+
         return results;
     }
     public static void main(String[] args) {
