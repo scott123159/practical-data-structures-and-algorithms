@@ -66,7 +66,7 @@ class test{
 
 class RoadStatus {
     private final int[] carsOnRoad;
-    private int currentGreenRoad; // 沒有任何綠燈時為-1
+    private int currentGreenRoad;
     private int currentTime;
     private int timer;
 
@@ -85,6 +85,7 @@ class RoadStatus {
 
     public int[] roadStatus(int time) {
         updateTime(time);
+        if (timer == currentTime) decideGreenLight();
         return carsOnRoad;
     }
 
@@ -100,7 +101,7 @@ class RoadStatus {
             if ((timer == currentTime || carsOnRoad[currentGreenRoad] == 0)) {
                 decideGreenLight();
             }
-            if (currentGreenRoad != -1 ) carsOnRoad[currentGreenRoad]--;
+            if (currentGreenRoad != -1) carsOnRoad[currentGreenRoad]--;
         }
     }
 
@@ -119,67 +120,77 @@ class RoadStatus {
     }
 
     public static void main(String[] args) {
-        // Test cases here
-        System.out.println("Example 1: ");
-        RoadStatus sol1 = new RoadStatus(); // create a T-junction; all traffic lights are Red at the beginning
-        sol1.addCar(0, 0, 2);
-        System.out.println("0: " + Arrays.toString(sol1.roadStatus(0)));
-        sol1.addCar(0, 1, 3);
-        System.out.println("0: " + Arrays.toString(sol1.roadStatus(0)));
-        System.out.println("1: " + Arrays.toString(sol1.roadStatus(1)));
-        sol1.addCar(2, 0, 4);
-        for (int i = 2; i < 12; ++i)
-            System.out.println(i + ": " + Arrays.toString(sol1.roadStatus(i)));
-        //______________________________________________________________________
-        // Example 2
-        RoadStatus sol2 = new RoadStatus(); // create a T-junction; all traffic lights are Red at the beginning
-        System.out.println("Example 2: ");
-        sol2.addCar(0, 0, 2);
-        System.out.println("0: " + Arrays.toString(sol2.roadStatus(0)));
-        sol2.addCar(0, 0, 1);
-        System.out.println("0: " + Arrays.toString(sol2.roadStatus(0)));
-        System.out.println("1: " + Arrays.toString(sol2.roadStatus(1)));
-        sol2.addCar(2, 1, 2);
-        for (int i = 2; i < 7; ++i)
-            System.out.println(i + ": " + Arrays.toString(sol2.roadStatus(i)));
-        //______________________________________________________________________
-        // Example 3
-        RoadStatus sol3 = new RoadStatus(); // create a T-junction; all traffic lights are Red at the beginning
-        System.out.println("Example 3: ");
-        sol3.addCar(0, 0, 1);
-        System.out.println("0: " + Arrays.toString(sol3.roadStatus(0)));
-        System.out.println("1: " + Arrays.toString(sol3.roadStatus(1)));
-        System.out.println("2: " + Arrays.toString(sol3.roadStatus(2)));
-        sol3.addCar(3, 1, 1);
-        System.out.println("3: " + Arrays.toString(sol3.roadStatus(3)));
-        sol3.addCar(3, 1, 1);
-        System.out.println("3: " + Arrays.toString(sol3.roadStatus(3)));
-        sol3.addCar(4, 0, 2);
-        for (int i = 4; i < 10; i++) {
-            System.out.println(i + ": " + Arrays.toString(sol3.roadStatus(i)));
+//        // Test cases here
+//        System.out.println("Example 1: ");
+//        RoadStatus sol1 = new RoadStatus(); // create a T-junction; all traffic lights are Red at the beginning
+//        sol1.addCar(0, 0, 2);
+//        System.out.println("0: " + Arrays.toString(sol1.roadStatus(0)));
+//        sol1.addCar(0, 1, 3);
+//        System.out.println("0: " + Arrays.toString(sol1.roadStatus(0)));
+//        System.out.println("1: " + Arrays.toString(sol1.roadStatus(1)));
+//        sol1.addCar(2, 0, 4);
+//        for (int i = 2; i < 12; ++i)
+//            System.out.println(i + ": " + Arrays.toString(sol1.roadStatus(i)));
+//        //______________________________________________________________________
+//        // Example 2
+//        RoadStatus sol2 = new RoadStatus(); // create a T-junction; all traffic lights are Red at the beginning
+//        System.out.println("Example 2: ");
+//        sol2.addCar(0, 0, 2);
+//        System.out.println("0: " + Arrays.toString(sol2.roadStatus(0)));
+//        sol2.addCar(0, 0, 1);
+//        System.out.println("0: " + Arrays.toString(sol2.roadStatus(0)));
+//        System.out.println("1: " + Arrays.toString(sol2.roadStatus(1)));
+//        sol2.addCar(2, 1, 2);
+//        for (int i = 2; i < 7; ++i)
+//            System.out.println(i + ": " + Arrays.toString(sol2.roadStatus(i)));
+//        //______________________________________________________________________
+//        // Example 3
+//        RoadStatus sol3 = new RoadStatus(); // create a T-junction; all traffic lights are Red at the beginning
+//        System.out.println("Example 3: ");
+//        sol3.addCar(0, 0, 1);
+//        System.out.println("0: " + Arrays.toString(sol3.roadStatus(0)));
+//        System.out.println("1: " + Arrays.toString(sol3.roadStatus(1)));
+//        System.out.println("2: " + Arrays.toString(sol3.roadStatus(2)));
+//        sol3.addCar(3, 1, 1);
+//        System.out.println("3: " + Arrays.toString(sol3.roadStatus(3)));
+//        sol3.addCar(3, 1, 1);
+//        System.out.println("3: " + Arrays.toString(sol3.roadStatus(3)));
+//        sol3.addCar(4, 0, 2);
+//        for (int i = 4; i < 10; i++) {
+//            System.out.println(i + ": " + Arrays.toString(sol3.roadStatus(i)));
+//        }
+//        RoadStatus sol4 = new RoadStatus(); // create a T-junction; all traffic lights are Red at the beginning
+//        System.out.println("Example 4: ");
+//        sol4.addCar(6, 1, 5);
+//        System.out.println("6: " + Arrays.toString(sol4.roadStatus(6)));
+//        sol4.addCar(9, 0, 8);
+//        sol4.addCar(10, 0, 5);
+//        sol4.addCar(10, 1, 2);
+//        System.out.println("13: " + Arrays.toString(sol4.roadStatus(13)));
+//        sol4.addCar(15, 2, 9);
+//        sol4.addCar(19, 0, 9);
+//        sol4.addCar(23, 1, 3);
+//        System.out.println("25: " + Arrays.toString(sol4.roadStatus(25)));
+//        sol4.addCar(26, 0, 9);
+//        sol4.addCar(26, 2, 7);
+//        sol4.addCar(26, 2, 6);
+//        System.out.println("25: " + Arrays.toString(sol4.roadStatus(27)));
+//        sol4.addCar(27, 2, 2);
+//        sol4.addCar(29, 0, 6);
+//        sol4.addCar(29, 2, 8);
+//        sol4.addCar(32, 1, 7);
+//        sol4.addCar(35, 2, 7);
+//        sol4.addCar(37, 2, 8);
+//        System.out.println("25: " + Arrays.toString(sol4.roadStatus(41)));
+        RoadStatus sol = new RoadStatus();
+        sol.addCar(0, 0, 10);
+        sol.addCar(0, 0, 10);
+        sol.addCar(0, 1, 3);
+        sol.addCar(0, 2, 3);
+        System.out.println(Arrays.toString(sol.roadStatus(10)));
+        sol.addCar(10, 0, 2);
+        for (int i = 10; i < 30; i++) {
+            System.out.println(i + " " + Arrays.toString(sol.roadStatus(i)));
         }
-        RoadStatus sol4 = new RoadStatus(); // create a T-junction; all traffic lights are Red at the beginning
-        System.out.println("Example 4: ");
-        sol4.addCar(6, 1, 5);
-        System.out.println("6: " + Arrays.toString(sol4.roadStatus(6)));
-        sol4.addCar(9, 0, 8);
-        sol4.addCar(10, 0, 5);
-        sol4.addCar(10, 1, 2);
-        System.out.println("13: " + Arrays.toString(sol4.roadStatus(13)));
-        sol4.addCar(15, 2, 9);
-        sol4.addCar(19, 0, 9);
-        sol4.addCar(23, 1, 3);
-        System.out.println("25: " + Arrays.toString(sol4.roadStatus(25)));
-        sol4.addCar(26, 0, 9);
-        sol4.addCar(26, 2, 7);
-        sol4.addCar(26, 2, 6);
-        System.out.println("25: " + Arrays.toString(sol4.roadStatus(27)));
-        sol4.addCar(27, 2, 2);
-        sol4.addCar(29, 0, 6);
-        sol4.addCar(29, 2, 8);
-        sol4.addCar(32, 1, 7);
-        sol4.addCar(35, 2, 7);
-        sol4.addCar(37, 2, 8);
-        System.out.println("25: " + Arrays.toString(sol4.roadStatus(41)));
     }
 }
