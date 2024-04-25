@@ -69,17 +69,20 @@ class RoadStatus {
     private int currentGreenRoad;
     private int currentTime;
     private int timer;
+    private boolean isSelected;
 
     public RoadStatus() {
         carsOnRoad = new int[3];
         currentGreenRoad = -1;
         currentTime = 0;
         timer = 0;
+        isSelected = false;
     }
 
     public void addCar(int time, int roadId, int numCars) {
         updateTime(time);
         carsOnRoad[roadId] += numCars;
+        if (timer == currentTime && !isSelected) decideGreenLight();
         if (currentGreenRoad == -1) decideGreenLight();
     }
 
@@ -91,6 +94,7 @@ class RoadStatus {
 
     private void updateTime(int targetTime) {
         while (currentTime < targetTime) {
+            isSelected = false;
             processTimeUnit();
             currentTime++;
         }
@@ -106,17 +110,23 @@ class RoadStatus {
     }
 
     private void decideGreenLight() {
-        int max = carsOnRoad[0];
-        currentGreenRoad = 0;
+        if (carsOnRoad[0] == 0 && carsOnRoad[1] == 0 && carsOnRoad[2] == 0) {
+            currentGreenRoad = -1;
+        } else {
+            if (!isSelected) {
+                int max = carsOnRoad[0];
+                currentGreenRoad = 0;
 
-        for (int i = 1; i < carsOnRoad.length; i++) {
-            if (carsOnRoad[i] > max) {
-                max = carsOnRoad[i];
-                currentGreenRoad = i;
+                for (int i = 1; i < carsOnRoad.length; i++) {
+                    if (carsOnRoad[i] > max) {
+                        max = carsOnRoad[i];
+                        currentGreenRoad = i;
+                    }
+                }
+                isSelected = true;
+                timer = max + currentTime;
             }
         }
-        timer = max + currentTime;
-        if (max == 0) currentGreenRoad = -1;
     }
 
     public static void main(String[] args) {
@@ -184,13 +194,10 @@ class RoadStatus {
 //        System.out.println("25: " + Arrays.toString(sol4.roadStatus(41)));
         RoadStatus sol = new RoadStatus();
         sol.addCar(0, 0, 10);
-        sol.addCar(0, 0, 10);
-        sol.addCar(0, 1, 3);
-        sol.addCar(0, 2, 3);
+        sol.addCar(0, 0, 2);
+        sol.addCar(10, 1, 5);
+        sol.addCar(10, 2, 10);
         System.out.println(Arrays.toString(sol.roadStatus(10)));
-        sol.addCar(10, 0, 2);
-        for (int i = 10; i < 30; i++) {
-            System.out.println(i + " " + Arrays.toString(sol.roadStatus(i)));
-        }
+        System.out.println(Arrays.toString(sol.roadStatus(11)));
     }
 }
