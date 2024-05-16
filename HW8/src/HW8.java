@@ -1,14 +1,9 @@
 import edu.princeton.cs.algs4.*;
-
-import java.awt.*;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.*;
-
 import com.google.gson.*;
-
-import edu.princeton.cs.algs4.In;
-import edu.princeton.cs.algs4.StdDraw;
+import edu.princeton.cs.algs4.Queue;
 
 class OutputFormat2{
     double[][] box;
@@ -105,8 +100,28 @@ class test{
     }
 }
 class ImageMerge {
+    private class Event {
+        private double time;
+        private String action;
+        private Box box;
+        public Event(double time, String action, Box box) {
+            this.time = time;
+            this.action = action;
+            this.box = box;
+        }
+    }
+    private class Box {
+        private int id;
+        private double[] box;
+        public Box(int id, double[] box) {
+            this.id = id;
+            this.box = box;
+        }
+    }
     private double[][] boxes;
     private double intersectionOverUnion;
+    private PriorityQueue<Event> eventQueue;
+    private Map<Integer, Box> boxesMap;
     private UF uf;
     private double[] merge(double[] b1, double[] b2) {
         return new double[] {
@@ -129,13 +144,16 @@ class ImageMerge {
     }
     public double[][] mergeBox()
     {
-        //return merged bounding boxes just as input in the format of
-        //[up_left_x,up_left_y,width,height]
-        for (int i = 0; i < boxes.length; i++) {
-            for (int j = 0; j < boxes.length; j++) {
-                if (calculateIntersectionOverUnion(boxes[i], boxes[j]) >= intersectionOverUnion)
-                    uf.union(i, j);
+        while (!eventQueue.isEmpty()) {
+            Event event = eventQueue.poll();
+            if (event.action == "add") {
+                for (Map.Entry<Integer, Box> entry : boxesMap.entrySet()) {
+                    if (calculateIntersectionOverUnion(event.box.box, entry.getValue().box) >= intersectionOverUnion)
+                        uf.union(event.box.id, entry.getKey());
+                }
+                boxesMap.put(event.box.id, event.box);
             }
+            if (event.action == "remove") boxesMap.remove(event.box.id);
         }
         Map<Integer, double[]> map = new HashMap<>();
         for (int i = 0; i < boxes.length; i++) {
@@ -160,6 +178,12 @@ class ImageMerge {
         boxes = bbs;
         intersectionOverUnion = iou_thresh;
         uf = new UF(boxes.length);
+        eventQueue = new PriorityQueue<>(Comparator.comparingDouble(event -> event.time));
+        boxesMap = new HashMap<>();
+        for (int i = 0; i < boxes.length; i++) {
+            eventQueue.add(new Event(boxes[i][0], "add", new Box(i, boxes[i])));
+            eventQueue.add(new Event(boxes[i][0] + boxes[i][2], "remove", new Box(i, boxes[i])));
+        }
     }
     public static void draw(double[][] bbs)
     {
@@ -177,44 +201,5 @@ class ImageMerge {
         }
     }
     public static void main(String[] args) {
-        final double[][] inputs = new double[][] {
-                {0.012224696674745185, 0.07414885009335948, 0.8725301725898733, 0.6152125624926833},
-                {0.012882554753731235, 0.18374197951131288, 0.8698524096958042, 0.8115385513927408},
-                {0.019748434594135035, 0.471390010126292, 0.8718304712137692, 0.6319149952734502},
-                {0.10930422516294433, 0.16787626159792102, 0.8531067645263916, 0.8606545197611064},
-                {0.11909373354531881, 0.7274736348372605, 0.8617199601047276, 0.8454970188770002},
-                {0.1371179313985583, 0.209621310169526, 0.7475368391410648, 0.7929518202691429},
-                {0.1920332941858375, 0.4273578093022845, 0.7416181930319978, 0.8946734037517932},
-                {0.23103923200898316, 0.3382881373669955, 0.6543663219683065, 0.8284470221508086},
-                {0.28474849463468266, 0.9508479989386014, 0.7043836180569533, 0.7202402982811252},
-                {0.31525088754278635, 0.6182065227845156, 0.6158633868711302, 0.6079342464243939},
-        };
-        ImageMerge sol = new ImageMerge(inputs, 0.44202325253758856);
-        double[][] outputs = sol.mergeBox();
-        ImageMerge.draw(inputs);
-//        double[][] temp = sol.mergeBox();
-//        ImageMerge.draw(new double[][] {
-//                {0.012224696674745185, 0.07414885009335948, 0.8725301725898733, 0.6152125624926833},
-//                {0.012882554753731235, 0.18374197951131288, 0.8698524096958042, 0.8115385513927408},
-//                {0.019748434594135035, 0.471390010126292, 0.8718304712137692, 0.6319149952734502},
-//                {0.10930422516294433, 0.16787626159792102, 0.8531067645263916, 0.8606545197611064},
-//                {0.11909373354531881, 0.7274736348372605, 0.8617199601047276, 0.8454970188770002},
-//                {0.1371179313985583, 0.209621310169526, 0.7475368391410648, 0.7929518202691429},
-//                {0.1920332941858375, 0.4273578093022845, 0.7416181930319978, 0.8946734037517932},
-//                {0.23103923200898316, 0.3382881373669955, 0.6543663219683065, 0.8284470221508086},
-//                {0.28474849463468266, 0.9508479989386014, 0.7043836180569533, 0.7202402982811252},
-//                {0.31525088754278635, 0.6182065227845156, 0.6158633868711302, 0.6079342464243939},
-//                temp[0]
-//        });
-//        double maxX = .0, maxY = .0;
-//        double max = .0;
-//        for (int i = 0; i < x.length; i++) {
-//            if (x[i][0] + x[i][2] > max) {
-//                max = x[i][0] + x[i][2];
-//                maxX = x[i][0];
-//                maxY = x[i][2];
-//            }
-//        }
-//        System.out.println(max + " " + maxX + " " + maxY);
     }
 }
