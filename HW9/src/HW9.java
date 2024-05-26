@@ -89,16 +89,23 @@ class LabNetworkCabling {
     private PrimMST mst;
     private int server;
     private int router;
+    private List<Integer> computers;
+    private List<Integer> printers;
     public LabNetworkCabling(Map<Integer, String> deviceTypes, List<int[]> links){
         // create a Minimum Spanning Tree
+        computers = new ArrayList<>();
+        printers = new ArrayList<>();
         for (Map.Entry<Integer, String> entry : deviceTypes.entrySet()) {
             if (Objects.equals(entry.getValue(), "Server")) server = entry.getKey();
             if (Objects.equals(entry.getValue(), "Router")) router = entry.getKey();
+            if (Objects.equals(entry.getValue(), "Computer")) computers.add(entry.getKey());
+            if (Objects.equals(entry.getValue(), "Printer")) printers.add(entry.getKey());
         }
         weightedGraph = new EdgeWeightedGraph(deviceTypes.size());
         minimumSpanningTree = new double[weightedGraph.V()][weightedGraph.V()];
         for (int[] i : links) weightedGraph.addEdge(new Edge(i[0], i[1], i[2]));
         mst = new PrimMST(weightedGraph);
+//        mst = new KruskalMST(weightedGraph);
         for (Edge e : mst.edges()) {
             int u = e.either();
             int v = e.other(u);
@@ -146,8 +153,30 @@ class LabNetworkCabling {
     }
 
     public int mostPopularPrinter(){
-        int printerIndex = 0;
+        Map<Integer, Integer> frequency = new HashMap<>();
+        int printerIndex = Integer.MIN_VALUE;
+        int maximumConnection = Integer.MIN_VALUE;
+        for (int computer : computers) {
+            int localMinimumWeight = Integer.MAX_VALUE;
+            int localPrinterIndex = Integer.MAX_VALUE;
+            for (int printer : printers) {
+                int weight = findPathWeight(computer, printer);
+                if (weight == localMinimumWeight) localPrinterIndex = Math.min(localPrinterIndex, printer);
+                if (weight < localMinimumWeight) {
+                    localPrinterIndex = printer;
+                    localMinimumWeight = weight;
+                }
+            }
+            frequency.put(localPrinterIndex, frequency.getOrDefault(localPrinterIndex, 0) + 1);
+        }
         // find the most popular printer and return its index
+        for (Map.Entry<Integer, Integer> entry : frequency.entrySet()) {
+            if (entry.getValue() == maximumConnection) printerIndex = Math.min(printerIndex, entry.getKey());
+            if (entry.getValue() > maximumConnection) {
+                printerIndex = entry.getKey();
+                maximumConnection = entry.getValue();
+            }
+        }
         return printerIndex;
     }
 
